@@ -24,6 +24,15 @@
     resultScore: $("#resultScore"),
     resultCombo: $("#resultCombo"),
     sound: $("#soundButton"),
+    cheat: $("#cheatScreen"),
+    cheatButton: $("#cheatButton"),
+    applyCheats: $("#applyCheats"),
+    closeCheats: $("#closeCheats"),
+    cheatInvincible: $("#cheatInvincible"),
+    cheatInfiniteEnergy: $("#cheatInfiniteEnergy"),
+    cheatMegaGun: $("#cheatMegaGun"),
+    cheatTwentyLives: $("#cheatTwentyLives"),
+    weapon: $("#weaponLabel"),
     pauseButton: $("#pauseButton")
   };
 
@@ -62,6 +71,7 @@
     right: false,
     fire: false,
     jump: false,
+    down: false,
     jumpPressed: false
   };
 
@@ -76,7 +86,15 @@
     bestCombo: 0,
     comboTimer: 0,
     lives: 3,
+    maxLives: 3,
     energy: 100,
+    cheats: {
+      invincible: false,
+      infiniteEnergy: false,
+      megaGun: false,
+      twentyLives: false
+    },
+    cheatReturnMode: "menu",
     bullets: [],
     enemyBullets: [],
     enemies: [],
@@ -116,6 +134,7 @@
   function makePlayer() {
     return {
       x: 120, y: FLOOR - 62, w: 38, h: 62,
+      standingHeight: 62, crouchHeight: 40, crouching: false,
       vx: 0, vy: 0, facing: 1,
       onGround: true, coyote: 0, invulnerable: 0,
       step: 0, muzzle: 0
@@ -209,17 +228,50 @@
     game.combo = 0;
     game.bestCombo = 0;
     game.comboTimer = 0;
-    game.lives = 3;
+    game.lives = game.maxLives;
     game.energy = 100;
     loadLevel(0);
     ui.start.classList.add("is-hidden");
     ui.pause.classList.add("is-hidden");
     ui.result.classList.add("is-hidden");
+    ui.cheat.classList.add("is-hidden");
     ui.pauseButton.textContent = "Ⅱ";
     ui.pauseButton.setAttribute("aria-label", "暂停游戏");
     ensureAudio();
     beep(220, .08, "square", .04);
     beep(440, .13, "square", .035, .05);
+  }
+
+  function openCheatPanel() {
+    if (game.mode === "cheat") return;
+    game.cheatReturnMode = game.mode;
+    ui.cheatInvincible.checked = game.cheats.invincible;
+    ui.cheatInfiniteEnergy.checked = game.cheats.infiniteEnergy;
+    ui.cheatMegaGun.checked = game.cheats.megaGun;
+    ui.cheatTwentyLives.checked = game.cheats.twentyLives;
+    ui.pause.classList.add("is-hidden");
+    ui.cheat.classList.remove("is-hidden");
+    game.mode = "cheat";
+  }
+
+  function closeCheatPanel() {
+    ui.cheat.classList.add("is-hidden");
+    game.mode = game.cheatReturnMode;
+    ui.pause.classList.toggle("is-hidden", game.mode !== "paused");
+  }
+
+  function applyCheatConfig() {
+    game.cheats.invincible = ui.cheatInvincible.checked;
+    game.cheats.infiniteEnergy = ui.cheatInfiniteEnergy.checked;
+    game.cheats.megaGun = ui.cheatMegaGun.checked;
+    game.cheats.twentyLives = ui.cheatTwentyLives.checked;
+    game.maxLives = game.cheats.twentyLives ? 20 : 3;
+    game.lives = game.cheats.twentyLives ? 20 : clamp(game.lives, 1, game.maxLives);
+    updateHud();
+    if (game.cheatReturnMode === "playing" || game.cheatReturnMode === "paused") {
+      showToast(game.cheats.megaGun ? "大火力机枪已装配" : "作弊配置已应用");
+    }
+    closeCheatPanel();
   }
 
   function togglePause() {
@@ -257,10 +309,12 @@
   }
 
   function updateHud() {
-    ui.lives.textContent = "●".repeat(game.lives) + "○".repeat(Math.max(0, 3 - game.lives));
+    ui.lives.textContent = `${game.lives} / ${game.maxLives}`;
     ui.energy.style.width = `${clamp(game.energy, 0, 100)}%`;
     ui.zone.textContent = `${String(game.levelIndex + 1).padStart(2, "0")} / 03`;
     ui.score.textContent = formatScore(game.score);
+    ui.weapon.textContent = game.cheats.megaGun ? "机枪" : "标准";
+    ui.weapon.style.color = game.cheats.megaGun ? "#ffd56d" : "";
   }
 
   function showToast(text) {
@@ -311,20 +365,28 @@
   }
 
   function fire() {
-    if (game.fireCooldown > 0 || game.energy <= 0) return;
+    const megaGun = game.cheats.megaGun;
+    if (game.fireCooldown > 0 || (!game.cheats.infiniteEnergy && game.energy <= 0)) return;
     const p = game.player;
     const direction = p.facing || 1;
-    game.fireCooldown = .16;
-    game.energy = clamp(game.energy - 3, 0, 100);
+    game.fireCooldown = megaGun ? .055 : .16;
+    if (!game.cheats.infiniteEnergy) game.energy = clamp(game.energy - (megaGun ? 1 : 3), 0, 100);
     p.muzzle = .08;
-    game.bullets.push({
-      x: p.x + (direction > 0 ? p.w + 2 : -10),
-      y: p.y + 25,
-      w: 18, h: 4, vx: direction * 720, vy: 0,
-      life: 1.8, damage: 1
-    });
-    spawnParticle(p.x + (direction > 0 ? p.w + 7 : -4), p.y + 26, "#ffd56d", 3, 70);
-    beep(180, .04, "square", .025);
+    const bulletY = p.y + (p.crouching ? 19 : 25);
+    const angles = megaGun ? [-.1, 0, .1] : [0];
+    for (const angle of angles) {
+      game.bullets.push({
+        x: p.x + (direction > 0 ? p.w + 2 : -10),
+        y: bulletY,
+        w: megaGun ? 30 : 18,
+        h: megaGun ? 5 : 4,
+        vx: direction * (megaGun ? 900 : 720) * Math.cos(angle),
+        vy: (megaGun ? 900 : 720) * Math.sin(angle),
+        life: 1.8, damage: megaGun ? 2 : 1
+      });
+    }
+    spawnParticle(p.x + (direction > 0 ? p.w + 7 : -4), bulletY + 2, "#ffd56d", megaGun ? 7 : 3, megaGun ? 110 : 70);
+    beep(megaGun ? 250 : 180, megaGun ? .025 : .04, "square", megaGun ? .04 : .025);
   }
 
   function enemyFire(enemy, angle = null) {
@@ -343,7 +405,7 @@
 
   function hitPlayer() {
     const p = game.player;
-    if (p.invulnerable > 0) return;
+    if (game.cheats.invincible || p.invulnerable > 0) return;
     game.lives -= 1;
     p.invulnerable = 1.6;
     game.shake = 15;
@@ -406,16 +468,24 @@
 
   function updatePlayer(dt) {
     const p = game.player;
+    const wantsCrouch = input.down && p.onGround;
+    const targetHeight = wantsCrouch ? p.crouchHeight : p.standingHeight;
+    if (p.h !== targetHeight) {
+      p.y += p.h - targetHeight;
+      p.h = targetHeight;
+    }
+    p.crouching = wantsCrouch;
     const direction = (input.right ? 1 : 0) - (input.left ? 1 : 0);
     if (direction !== 0) {
       p.facing = direction;
-      p.vx += (direction * 260 - p.vx) * Math.min(1, dt * 12);
+      const speed = p.crouching ? 170 : 260;
+      p.vx += (direction * speed - p.vx) * Math.min(1, dt * 12);
       p.step += dt * 13;
     } else {
       p.vx *= Math.pow(.0006, dt);
       p.step += dt * 4;
     }
-    if (input.jumpPressed && (p.onGround || p.coyote > 0)) {
+    if (input.jumpPressed && !p.crouching && (p.onGround || p.coyote > 0)) {
       p.vy = -590;
       p.onGround = false;
       p.coyote = 0;
@@ -546,7 +616,7 @@
       if (rectsOverlap(game.player, box)) {
         pickup.collected = true;
         if (pickup.kind === "health") {
-          game.lives = clamp(game.lives + 1, 1, 3);
+          game.lives = clamp(game.lives + 1, 1, game.maxLives);
           showToast("战术生命 +1");
           beep(520, .09, "triangle", .04);
         } else {
@@ -714,23 +784,43 @@
     ctx.translate(p.x + p.w / 2, p.y);
     ctx.scale(p.facing, 1);
     const walking = p.onGround ? Math.sin(p.step) * 3 : 0;
-    ctx.fillStyle = "#07131b";
-    ctx.fillRect(-15, 19, 30, 29);
-    ctx.fillStyle = "#e9f1f4";
-    ctx.fillRect(-11, 10, 20, 22);
-    ctx.fillStyle = "#ff9d52";
-    ctx.fillRect(-13, 4, 24, 10);
-    ctx.fillStyle = "#243e4b";
-    ctx.fillRect(-8, 16, 15, 10);
-    ctx.fillStyle = "#6de5dc";
-    ctx.fillRect(5, 15, 7, 3);
-    ctx.fillStyle = "#d2e8e9";
-    ctx.fillRect(-11, 42, 9, 17 + walking);
-    ctx.fillRect(4, 42, 9, 17 - walking);
-    ctx.fillStyle = "#ff9d52";
-    ctx.fillRect(9, 25, 24, 7);
-    ctx.fillStyle = "#ffd56d";
-    ctx.fillRect(31, 26, 8 + p.muzzle * 100, 4);
+    if (p.crouching) {
+      ctx.fillStyle = "#07131b";
+      ctx.fillRect(-17, 17, 34, 18);
+      ctx.fillStyle = "#e9f1f4";
+      ctx.fillRect(-13, 9, 21, 17);
+      ctx.fillStyle = "#ff9d52";
+      ctx.fillRect(-15, 4, 25, 9);
+      ctx.fillStyle = "#243e4b";
+      ctx.fillRect(-8, 14, 16, 9);
+      ctx.fillStyle = "#6de5dc";
+      ctx.fillRect(5, 13, 7, 3);
+      ctx.fillStyle = "#d2e8e9";
+      ctx.fillRect(-13, 32, 15, 7);
+      ctx.fillRect(4, 31, 14, 8);
+      ctx.fillStyle = "#ff9d52";
+      ctx.fillRect(7, 21, 27, 6);
+      ctx.fillStyle = "#ffd56d";
+      ctx.fillRect(32, 22, 8 + p.muzzle * 100, 4);
+    } else {
+      ctx.fillStyle = "#07131b";
+      ctx.fillRect(-15, 19, 30, 29);
+      ctx.fillStyle = "#e9f1f4";
+      ctx.fillRect(-11, 10, 20, 22);
+      ctx.fillStyle = "#ff9d52";
+      ctx.fillRect(-13, 4, 24, 10);
+      ctx.fillStyle = "#243e4b";
+      ctx.fillRect(-8, 16, 15, 10);
+      ctx.fillStyle = "#6de5dc";
+      ctx.fillRect(5, 15, 7, 3);
+      ctx.fillStyle = "#d2e8e9";
+      ctx.fillRect(-11, 42, 9, 17 + walking);
+      ctx.fillRect(4, 42, 9, 17 - walking);
+      ctx.fillStyle = "#ff9d52";
+      ctx.fillRect(9, 25, 24, 7);
+      ctx.fillStyle = "#ffd56d";
+      ctx.fillRect(31, 26, 8 + p.muzzle * 100, 4);
+    }
     ctx.restore();
   }
 
@@ -940,6 +1030,7 @@
     if (key === "a" || key === "arrowleft") return "left";
     if (key === "d" || key === "arrowright") return "right";
     if (key === "w" || key === "arrowup" || key === " ") return "jump";
+    if (key === "s" || key === "arrowdown") return "down";
     if (key === "j" || key === "k" || key === "enter") return "fire";
     return null;
   }
@@ -949,6 +1040,11 @@
     if (control) {
       event.preventDefault();
       setControl(control, true);
+    }
+    if (event.key === "Escape" && game.mode === "cheat") {
+      event.preventDefault();
+      closeCheatPanel();
+      return;
     }
     if (event.key.toLowerCase() === "p" || event.key === "Escape") {
       event.preventDefault();
@@ -984,8 +1080,11 @@
   $("#restartButton").addEventListener("click", startGame);
   $("#resumeButton").addEventListener("click", togglePause);
   $("#howButton").addEventListener("click", () => {
-    showToast("A / D 移动 · W 或 ↑ 跳跃 · J 射击 · P 暂停");
+    showToast("A / D 移动 · W / ↑ 跳跃 · S / ↓ 蹲下 · J 射击 · P 暂停");
   });
+  ui.cheatButton.addEventListener("click", openCheatPanel);
+  ui.applyCheats.addEventListener("click", applyCheatConfig);
+  ui.closeCheats.addEventListener("click", closeCheatPanel);
   ui.pauseButton.addEventListener("click", togglePause);
   ui.sound.addEventListener("click", () => {
     game.sound = !game.sound;

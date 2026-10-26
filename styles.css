@@ -83,6 +83,15 @@ button { font: inherit; }
   transition: .2s ease;
 }
 
+.cheat-button {
+  width: auto;
+  padding: 0 11px;
+  color: var(--orange);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+
 .icon-button:hover, .icon-button:focus-visible {
   border-color: rgba(109, 229, 220, .65);
   color: var(--cyan);
@@ -141,6 +150,7 @@ button { font: inherit; }
 .hud-stat { display: grid; gap: 4px; }
 .hud-stat strong { font-size: 14px; letter-spacing: .12em; }
 .hearts { color: var(--red); font-size: 13px; letter-spacing: .13em; }
+.weapon-stat strong { color: var(--orange); font-size: 11px; }
 .meter { width: 100px; height: 5px; overflow: hidden; background: rgba(233, 241, 244, .18); }
 .meter span { display: block; width: 72%; height: 100%; background: var(--orange); transition: width .2s ease; }
 .score-stat strong { color: var(--yellow); }
@@ -222,7 +232,7 @@ button { font: inherit; }
 .mission-tag { color: var(--orange); }
 
 .screen-overlay { align-items: center; justify-content: center; background: rgba(3, 10, 16, .74); backdrop-filter: blur(8px); }
-.overlay-panel { width: min(410px, calc(100% - 48px)); padding: 36px; border: 1px solid rgba(109, 229, 220, .34); background: rgba(6, 19, 29, .95); box-shadow: 0 20px 70px rgba(0, 0, 0, .35); }
+.overlay-panel { width: min(410px, calc(100% - 48px)); max-height: calc(100% - 32px); overflow-y: auto; padding: 36px; border: 1px solid rgba(109, 229, 220, .34); background: rgba(6, 19, 29, .95); box-shadow: 0 20px 70px rgba(0, 0, 0, .35); }
 .overlay-panel h2 { margin: 12px 0 7px; font-size: 42px; line-height: 1; letter-spacing: -.04em; }
 .overlay-panel p:not(.screen-kicker) { color: var(--muted); font-size: 13px; line-height: 1.7; }
 .overlay-panel .primary-button { margin-top: 16px; }
@@ -230,6 +240,30 @@ button { font: inherit; }
 .result-stats div { display: grid; gap: 5px; }
 .result-stats span { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .12em; }
 .result-stats strong { color: var(--yellow); font-size: 24px; }
+
+.cheat-panel { width: min(480px, calc(100% - 48px)); }
+.cheat-options { display: grid; gap: 10px; margin: 23px 0 8px; }
+.cheat-option {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 12px 13px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, .035);
+  cursor: pointer;
+  transition: .2s ease;
+}
+.cheat-option:hover { border-color: rgba(109, 229, 220, .55); background: rgba(109, 229, 220, .06); }
+.cheat-option input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--cyan);
+  flex: 0 0 auto;
+}
+.cheat-option span { display: grid; gap: 4px; }
+.cheat-option strong { font-size: 13px; }
+.cheat-option small { color: var(--muted); font-size: 10px; }
+.cheat-actions { display: flex; align-items: center; gap: 10px; margin-top: 18px; }
 
 .is-hidden { display: none !important; }
 .toast {
@@ -274,6 +308,7 @@ button { font: inherit; }
 .touch-button { width: 54px; height: 54px; border: 1px solid rgba(188, 220, 226, .38); border-radius: 50%; background: rgba(6, 20, 29, .78); color: var(--ink); box-shadow: 0 8px 22px rgba(0, 0, 0, .25); -webkit-tap-highlight-color: transparent; }
 .touch-button:active { border-color: var(--cyan); color: var(--cyan); transform: scale(.96); }
 .touch-fire { border-color: rgba(255, 157, 82, .5); color: var(--orange); }
+.touch-down { border-color: rgba(255, 157, 82, .42); color: var(--orange); }
 
 @media (max-width: 900px) {
   .shell { width: min(100% - 22px, 740px); padding-top: 17px; }
@@ -293,6 +328,7 @@ button { font: inherit; }
   .avatar { width: 31px; height: 31px; font-size: 9px; }
   .hud-label { font-size: 8px; }
   .hud-stat strong { font-size: 11px; }
+  .weapon-stat { display: none; }
   .meter { width: 66px; }
   .score-stat { display: none; }
   .screen-start { padding: 16px 18px; align-items: flex-end; }
@@ -304,4 +340,15 @@ button { font: inherit; }
   .legal-note { margin-top: 9px; font-size: 7px; }
   .start-aside { display: none; }
   .page-footer { font-size: 8px; }
+  #cheatScreen {
+    position: fixed;
+    z-index: 30;
+    background: rgba(3, 10, 16, .94);
+  }
+  #cheatScreen .cheat-panel {
+    width: min(360px, calc(100% - 28px));
+    max-height: calc(100dvh - 28px);
+    padding: 22px;
+  }
+  #cheatScreen .overlay-panel h2 { font-size: 34px; }
 }

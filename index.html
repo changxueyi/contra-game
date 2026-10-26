@@ -21,6 +21,7 @@
       </div>
       <div class="top-actions">
         <button class="icon-button" id="soundButton" type="button" aria-label="关闭声音" title="声音开关">♫</button>
+        <button class="icon-button cheat-button" id="cheatButton" type="button" aria-label="打开作弊配置" title="作弊配置">作弊</button>
         <button class="icon-button" id="pauseButton" type="button" aria-label="暂停游戏" title="暂停游戏">Ⅱ</button>
       </div>
     </header>
@@ -40,6 +41,10 @@
             <div class="hud-stat">
               <span class="hud-label">火力能量</span>
               <div class="meter"><span id="energyMeter"></span></div>
+            </div>
+            <div class="hud-stat weapon-stat">
+              <span class="hud-label">武器</span>
+              <strong id="weaponLabel">标准</strong>
             </div>
           </div>
           <div class="hud-cluster hud-right">
@@ -73,6 +78,36 @@
               <span class="mission-tag">MISSION BRIEF</span>
               <strong>把今天的路<br>打穿。</strong>
               <span>跑、跳、射击、升级<br>在首领抵达前完成封锁。</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen screen-overlay is-hidden" id="cheatScreen">
+          <div class="overlay-panel cheat-panel">
+            <p class="screen-kicker">CONFIG OVERRIDE</p>
+            <h2>作弊配置</h2>
+            <p>只影响当前浏览器中的本地试玩，不上传任何数据。</p>
+            <div class="cheat-options">
+              <label class="cheat-option">
+                <input type="checkbox" id="cheatInvincible">
+                <span><strong>无敌模式</strong><small>关闭伤害与生命消耗</small></span>
+              </label>
+              <label class="cheat-option">
+                <input type="checkbox" id="cheatInfiniteEnergy">
+                <span><strong>无限火力</strong><small>能量不下降，适合测试关卡</small></span>
+              </label>
+              <label class="cheat-option">
+                <input type="checkbox" id="cheatMegaGun">
+                <span><strong>大火力机枪</strong><small>三发散射、射速提升、伤害增强</small></span>
+              </label>
+              <label class="cheat-option">
+                <input type="checkbox" id="cheatTwentyLives">
+                <span><strong>20 滴生命</strong><small>把战术生命上限提升到 20</small></span>
+              </label>
+            </div>
+            <div class="cheat-actions">
+              <button class="primary-button" id="applyCheats" type="button"><span>应用设置</span><b>✓</b></button>
+              <button class="ghost-button" id="closeCheats" type="button">关闭</button>
             </div>
           </div>
         </section>
@@ -116,6 +151,7 @@
         <div class="keys">
           <div class="key-row"><span class="key wide">A</span><span class="key wide">D</span><span>移动</span></div>
           <div class="key-row"><span class="key">W</span><span class="key">↑</span><span>跳跃</span></div>
+          <div class="key-row"><span class="key">S</span><span class="key">↓</span><span>蹲下</span></div>
           <div class="key-row"><span class="key wide">J</span><span>射击</span></div>
           <div class="key-row"><span class="key wide">P</span><span>暂停</span></div>
         </div>
@@ -136,6 +172,7 @@
     <div class="touch-cluster">
       <button class="touch-button" data-control="left" aria-label="向左">←</button>
       <button class="touch-button" data-control="right" aria-label="向右">→</button>
+      <button class="touch-button touch-down" data-control="down" aria-label="蹲下">↓</button>
     </div>
     <div class="touch-cluster touch-actions">
       <button class="touch-button touch-jump" data-control="jump" aria-label="跳跃">↑</button>
