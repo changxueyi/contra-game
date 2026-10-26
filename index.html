@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#08131e">
+  <meta name="description" content="突击战线：一款原创横版跑射小游戏。">
+  <title>突击战线 | Run & Gun</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <div>
+          <p class="eyebrow">ORIGINAL RUN &amp; GUN</p>
+          <h1>突击战线</h1>
+        </div>
+      </div>
+      <div class="top-actions">
+        <button class="icon-button" id="soundButton" type="button" aria-label="关闭声音" title="声音开关">♫</button>
+        <button class="icon-button" id="pauseButton" type="button" aria-label="暂停游戏" title="暂停游戏">Ⅱ</button>
+      </div>
+    </header>
+
+    <section class="game-frame" aria-label="突击战线游戏区域">
+      <div class="game-wrap">
+        <canvas id="gameCanvas" width="1280" height="720"></canvas>
+        <div class="scanlines" aria-hidden="true"></div>
+
+        <section class="hud" id="hud" aria-live="polite">
+          <div class="hud-cluster">
+            <div class="avatar" aria-hidden="true">01</div>
+            <div class="hud-stat">
+              <span class="hud-label">战术生命</span>
+              <span class="hearts" id="lives">●●●</span>
+            </div>
+            <div class="hud-stat">
+              <span class="hud-label">火力能量</span>
+              <div class="meter"><span id="energyMeter"></span></div>
+            </div>
+          </div>
+          <div class="hud-cluster hud-right">
+            <div class="hud-stat">
+              <span class="hud-label">区域</span>
+              <strong id="zoneLabel">01 / 03</strong>
+            </div>
+            <div class="hud-stat score-stat">
+              <span class="hud-label">得分</span>
+              <strong id="score">000000</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen screen-start" id="startScreen">
+          <div class="screen-grid"></div>
+          <div class="start-copy">
+            <p class="screen-kicker">SECTOR 01 · BLACK COAST</p>
+            <h2>突击<br><em>战线</em></h2>
+            <p class="screen-subtitle">穿过黑潮工业区，关闭失控的核心反应堆。</p>
+            <div class="start-buttons">
+              <button class="primary-button" id="startButton" type="button">
+                <span>开始任务</span><b>↗</b>
+              </button>
+              <button class="ghost-button" id="howButton" type="button">操作说明</button>
+            </div>
+            <p class="legal-note">原创 Canvas 游戏 · 仅致敬经典横版跑射玩法</p>
+          </div>
+          <div class="start-aside">
+            <div class="mission-card">
+              <span class="mission-tag">MISSION BRIEF</span>
+              <strong>把今天的路<br>打穿。</strong>
+              <span>跑、跳、射击、升级<br>在首领抵达前完成封锁。</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen screen-overlay is-hidden" id="pauseScreen">
+          <div class="overlay-panel">
+            <p class="screen-kicker">TACTICAL PAUSE</p>
+            <h2>任务暂停</h2>
+            <p>战线还在，按下继续返回战场。</p>
+            <button class="primary-button" id="resumeButton" type="button"><span>继续任务</span><b>→</b></button>
+          </div>
+        </section>
+
+        <section class="screen screen-overlay is-hidden" id="resultScreen">
+          <div class="overlay-panel">
+            <p class="screen-kicker" id="resultKicker">MISSION COMPLETE</p>
+            <h2 id="resultTitle">任务完成</h2>
+            <p id="resultMessage">你守住了黑潮工业区。</p>
+            <div class="result-stats">
+              <div><span>最终得分</span><strong id="resultScore">000000</strong></div>
+              <div><span>最高连击</span><strong id="resultCombo">x00</strong></div>
+            </div>
+            <button class="primary-button" id="restartButton" type="button"><span>重新出发</span><b>↻</b></button>
+          </div>
+        </section>
+
+        <div class="toast is-hidden" id="toast" role="status"></div>
+      </div>
+
+      <aside class="control-deck">
+        <div class="control-head">
+          <div>
+            <span class="panel-kicker">TACTICAL DECK</span>
+            <h2>战术面板</h2>
+          </div>
+          <span class="status-light"><i></i> LIVE</span>
+        </div>
+        <div class="control-copy">
+          <p>在移动平台之间保持节奏。落地、射击、前进，每一个动作都会改变下一秒。</p>
+        </div>
+        <div class="keys">
+          <div class="key-row"><span class="key wide">A</span><span class="key wide">D</span><span>移动</span></div>
+          <div class="key-row"><span class="key">W</span><span class="key">↑</span><span>跳跃</span></div>
+          <div class="key-row"><span class="key wide">J</span><span>射击</span></div>
+          <div class="key-row"><span class="key wide">P</span><span>暂停</span></div>
+        </div>
+        <div class="control-footer">
+          <span>建议：保持移动</span>
+          <span>v1.0 / 2026</span>
+        </div>
+      </aside>
+    </section>
+
+    <footer class="page-footer">
+      <span>CHANGXUEYI / ORIGINAL ARCADE LAB</span>
+      <span>键盘与触控均可游玩</span>
+    </footer>
+  </main>
+
+  <div class="touch-controls" id="touchControls" aria-label="触控操作">
+    <div class="touch-cluster">
+      <button class="touch-button" data-control="left" aria-label="向左">←</button>
+      <button class="touch-button" data-control="right" aria-label="向右">→</button>
+    </div>
+    <div class="touch-cluster touch-actions">
+      <button class="touch-button touch-jump" data-control="jump" aria-label="跳跃">↑</button>
+      <button class="touch-button touch-fire" data-control="fire" aria-label="射击">●</button>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
